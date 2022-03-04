@@ -59,14 +59,22 @@ router.post(`/data`, async(req, res) => {
 
 //creating stripe request from frontend
 router.post(`/paybystripe`, async(req, res) => {
-    const { id, total, quantity } = req.body
+    const { total, id, title, image, quantity } = req.body
+
     try {
         const session = await stripe.checkout.sessions.create({
+
             payment_method_types: [`card`],
             mode: `payment`,
             line_items: [{
-                price: req.body.total,
-                quantity: req.body.quantity,
+                price_data: {
+                    currency: `usd`,
+                    product_data: {
+                        name: title,
+                    },
+                    unit_amount: total,
+                },
+                quantity: quantity,
             }],
             success_url: `${process.env.SERVER_URL}/views/success.ejs`,
             cancel_url: `${process.env.SERVER_URL}/views/cancel.ejs`

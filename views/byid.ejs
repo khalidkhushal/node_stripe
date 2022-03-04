@@ -51,38 +51,37 @@
         </div>
         <script>
             var button = document.querySelector(`button`)
-            button.addEventListener(`click`, function() {
-                $.ajax({
-                        url: "/paybystripe",
-                        method: "POST",
+            button.addEventListener(`click`, function(e) {
+                e.preventDefault();
 
-                        ContentType: "application/json",
-                        data: JSON.stringify({
-                            total: order.price,
-                            id: order.id,
-                            quantity: 1
-                        }),
-                        success: function(data, textstatus, xhr) {
-                            var stripe = Stripe(process.env.stripepubkey)
-                            return stripe.redirectToCheckout({
-                                sessionID: data.id
-                            })
-                        }
+                var myHeaders = new Headers();
+                myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+                var urlencoded = new URLSearchParams();
+                urlencoded.append("total", "2400");
+                urlencoded.append("id", "2");
+                urlencoded.append("image", "pro.jpg");
+                urlencoded.append("title", "matrice");
+                urlencoded.append("quantity", "1");
+
+                var requestOptions = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    body: urlencoded,
+                    redirect: 'follow'
+                };
+
+                fetch("http://localhost:8080/paybystripe", requestOptions)
+                    .then(response => response.text())
+                    .then(result => {
+                        console.log(result)
+                        var stripe = Stripe(`pk_test_51KZHppH2Xi1v1gEndciIRPkrJZFJGxkyWEKgWv75MYMIAVY6sSTe128hR3RWalePgm3bh6MqzVBmxoseQge2D0xW00E6tjXIPh`)
+                        return stripe.redirectToCheckout({
+                            sessionId: JSON.parse(result).id
+                        })
                     })
-                    // .then((res) => {
-                    //     if (res.ok) {
-                    //         return res.json()
-                    //     }
-                    //     return res.json().then((json) => {
-                    //         Promise.reject(json)
-                    //     })
-                    // })
-                    // .then(({
-                    //     url
-                    // }) => {
+                    .catch(error => console.log('error', error));
 
-                //     window.location = url;
-                // });
             })
         </script>
 
